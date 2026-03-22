@@ -1,7 +1,14 @@
+require('dotenv').config(); // Load secrets securely
 const express = require('express');
 const cors = require('cors');
+const connectDB = require('./src/config/db');
+
+// Connect to MongoDB Database
+connectDB();
+
 const ingestionRoutes = require('./src/routes/ingestionRoutes');
 const queueRoutes = require('./src/routes/queueRoutes');
+
 
 // Load Background Worker
 require('./src/workers/whatsappWorker');

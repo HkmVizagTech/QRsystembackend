@@ -1,7 +1,7 @@
 const fs = require('fs');
 const csv = require('csv-parser');
 const { cleanPhoneNumber } = require('../utils/phoneSanitizer');
-// const Recipient = require('../models/Recipient'); // Mongoose model (omitted mock since DB isn't wired yet)
+const Recipient = require('../models/Recipient'); // Mongoose Model integration
 
 /**
  * Standardizes categories to match predefined ENUMs (e.g., VIP, Donor, General)
@@ -88,19 +88,29 @@ exports.uploadCSV = (req, res) => {
             // Memory cleanup: Delete file from temp storage after parsing
             fs.unlinkSync(req.file.path);
 
-            /**
-             * MONGODB INTEGRATION (Future Step)
-             * using bulkWrite for huge datasets to insert ignoring existing keys
-             * 
-             * const ops = results.map(r => ({
-             *   updateOne: {
-             *      filter: { phone: r.phone, eventId: req.body.eventId },
-             *      update: { $setOnInsert: r },
-             *      upsert: true
-             *   }
-             * }));
-             * await Recipient.bulkWrite(ops);
-             */
+            // MONGODB INTEGRATION (Bulk Insertion)
+            // using bulkWrite for huge datasets to insert ignoring existing keys while gracefully upserting tags
+            try {
+                if(results.length > 0 && process.env.MONGODB_URI) {
+                     const eventId = req.body.eventId || null; // Add dynamic eventId mapping from UI upload payload eventually
+                     const ops = results.map(r => ({
+                         updateOne: {
+                             // Assuming eventId defines isolation level so same number can register to multiple separate festivals
+                             filter: { phone: r.phone, eventId: eventId }, 
+                             update: { 
+                                 $setOnInsert: { ...r, eventId: eventId },
+                                 $addToSet: { tags: { $each: r.tags } } // merge tags rather than overwrite
+                             },
+                             upsert: true
+                         }
+                     }));
+                     const bulkRes = await Recipient.bulkWrite(ops, { ordered: false });
+                     console.log(`[DB] BulkWrite Finished. Upserted ${bulkRes.upsertedCount}, Modified Tags: ${bulkRes.modifiedCount}`);
+                }
+            } catch (dbError) {
+                console.error('[DB] Failed DB batch insert:', dbError.message);
+                // Optionally push to 'failed' log
+            }
 
             return res.json({
                 status: 'success',
