@@ -1,0 +1,25 @@
+{
+  "name": "prasadam-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "bullmq": "^5.71.0",
+    "cors": "^2.8.6",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.7.0",
+    "google-libphonenumber": "^3.2.44",
+    "mongoose": "^9.3.1",
+    "multer": "^2.1.1",
+    "qrcode": "^1.5.4"
+  }
+}
