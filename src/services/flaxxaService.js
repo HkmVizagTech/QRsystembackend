@@ -6,8 +6,8 @@ const axios = require('axios');
  */
 class FlaxxaService {
     constructor() {
-        this.apiKey = process.env.FLAXXA_API_KEY || 'MOCK_KEY_FOR_DEV';
-        this.apiUrl = process.env.FLAXXA_API_URL || 'https://api.flaxxa.com/v1/messages';
+        this.apiKey = process.env.FLAXXA_API_KEY || '92349896869a99fd142d59';
+        this.apiUrl = process.env.FLAXXA_API_URL || 'https://wapi.flaxxa.com';
     }
 
     /**
@@ -22,26 +22,29 @@ class FlaxxaService {
         // Prepare the personalized template
         const messageText = `Hare Krishna ${name}! 🙏\n\nThank you for your seva. Please present this QR code to receive prasadam during the ${eventName}.\n\nYour unreserved token is below:`;
 
+        // We clean the "+" sign for standard WAPI gateways which usually expect "919876543210" instead of "+919876543210"
+        const cleanPhone = phone.replace('+', '');
+
         const payload = {
             apikey: this.apiKey,
-            mobile: phone,
+            mobile: cleanPhone,
             msg: messageText,
-            mediaurl: qrUrl, // Assuming Flaxxa accepts 'mediaurl' for image attachments
-            type: 'image'
+            mediaurl: qrUrl, // Ensure this QR is hosted publicly
+            // Add Temple ID / Instance ID here later when provided
         };
 
         try {
-            // In a real environment, uncomment the axios post.
-            // const response = await axios.post(`${this.apiUrl}/send-media`, payload);
+            // Un-commented the physical integration to hit the real endpoint
+            console.log(`[FLAXXA] Dialing WAPI gateway for ${cleanPhone}...`);
+            const response = await axios.post(`${this.apiUrl}/api/sendImage`, payload, {
+               headers: { 'Content-Type': 'application/json' }
+            });
             
-            // For safety in this test environment, we mock successful API responses:
-            // return response.data;
-            
-            console.log(`[FLAXXA MOCK] Sending WhatsApp to ${phone}...`);
-            return { status: 'success', message_id: `msg_${Math.floor(Math.random() * 1000000)}` };
+            console.log(`[FLAXXA] Message Sent! ID:`, response.data);
+            return response.data;
 
         } catch (error) {
-            console.error(`[FLAXXA MOCK] Failed to send to ${phone}`, error?.response?.data || error.message);
+            console.error(`[FLAXXA ERROR] Failed to send to ${phone}`, error?.response?.data || error.message);
             throw error; // Let BullMQ catch this and handle the retry logic
         }
     }
