@@ -8,7 +8,6 @@ connectDB();
 
 const ingestionRoutes = require('./src/routes/ingestionRoutes');
 const queueRoutes = require('./src/routes/queueRoutes');
-const recipientRoutes = require('./src/routes/recipientRoutes');
 
 
 // Load Background Worker
@@ -21,7 +20,6 @@ app.use(express.json());
 // API Routes
 app.use('/api/ingestion', ingestionRoutes);
 app.use('/api/queue', queueRoutes);
-app.use('/api/recipients', recipientRoutes);
 
 app.get('/', (req, res) => {
   res.send({ status: 'success', message: 'Prasadam Distribution Backend API is running on Cloud Run!' });
@@ -35,3 +33,4 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+

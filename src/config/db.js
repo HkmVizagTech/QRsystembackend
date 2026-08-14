@@ -8,9 +8,10 @@ const connectDB = async () => {
             return;
         }
 
-        // Note: useNewUrlParser / useUnifiedTopology were removed in Mongoose 8+.
-        // They are no longer needed — modern mongoose handles both automatically.
-        const conn = await mongoose.connect(uri);
+        const conn = await mongoose.connect(uri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
 
         console.log(`[MongoDB] Connected: ${conn.connection.host}`);
     } catch (error) {
